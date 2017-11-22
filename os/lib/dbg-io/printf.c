@@ -40,7 +40,7 @@ static strformat_result
 write_str(void *user_data, const char *data, unsigned int len)
 {
   if(len > 0) {
-    dbg_send_bytes((unsigned char *)data, len);
+    char_io_write_bytes((unsigned char *)data, len);
   }
   return STRFORMAT_OK;
 }
