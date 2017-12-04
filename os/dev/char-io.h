@@ -1,16 +1,16 @@
 /*
- * Copyright (c) 2012, Texas Instruments Incorporated - http://www.ti.com/
+ * Copyright (c) 2017, George Oikonomou - http://www.spd.gr
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
+ *
  * 1. Redistributions of source code must retain the above copyright
  *    notice, this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- *
  * 3. Neither the name of the copyright holder nor the names of its
  *    contributors may be used to endorse or promote products derived
  *    from this software without specific prior written permission.
@@ -29,39 +29,18 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 /*---------------------------------------------------------------------------*/
+#ifndef CHAR_IO_H_
+#define CHAR_IO_H_
+/*---------------------------------------------------------------------------*/
 #include "contiki.h"
-#include "dev/slip.h"
-#include "dev/uart.h"
-#include "usb/usb-serial.h"
-/*---------------------------------------------------------------------------*/
-#ifndef SLIP_ARCH_CONF_USB
-#define SLIP_ARCH_CONF_USB 0
-#endif
 
-#if SLIP_ARCH_CONF_USB
-#define write_byte(b) usb_serial_writeb(b)
-#define set_input(f)  usb_serial_set_input(f)
-#define flush()       usb_serial_flush()
-#else
-#define write_byte(b) uart_write_byte(SLIP_ARCH_CONF_UART, b)
-#define set_input(f)  uart_set_input(SLIP_ARCH_CONF_UART, f)
-#define flush()
-#endif
-
-#define SLIP_END     0300
+#include <stdint.h>
 /*---------------------------------------------------------------------------*/
-void
-slip_arch_writeb(unsigned char c)
-{
-  write_byte(c);
-  if(c == SLIP_END) {
-    flush();
-  }
-}
+typedef struct char_io_device_s {
+  void (*write_byte)(uint8_t byte);
+  void (*set_input_callback)(int (*input_callback)(uint8_t byte));
+  void (*flush)(void);
+} char_io_device_t;
 /*---------------------------------------------------------------------------*/
-void
-slip_arch_init()
-{
-  set_input(slip_input_byte);
-}
+#endif /* CHAR_IO_H_ */
 /*---------------------------------------------------------------------------*/

@@ -35,6 +35,7 @@
 #define SLIP_H_
 
 #include "contiki.h"
+#include "dev/char-io.h"
 
 PROCESS_NAME(slip_process);
 
@@ -73,11 +74,6 @@ void slip_write(const void *ptr, int len);
  */
 void slip_set_input_callback(void (*callback)(void));
 
-/*
- * These machine dependent functions and an interrupt service routine
- * must be provided externally (slip_arch.c).
- */
-void slip_arch_init(void);
-void slip_arch_writeb(unsigned char c);
+extern char_io_device_t slip_dev;
 
 #endif /* SLIP_H_ */

@@ -236,7 +236,7 @@ slip_input_callback(void)
 static void
 init(void)
 {
-  slip_arch_init();
+  slip_dev.set_input_callback(slip_input_byte);
   process_start(&slip_process, NULL);
   slip_set_input_callback(slip_input_callback);
   packet_pos = 0;

@@ -40,6 +40,7 @@
 #include "dev/ioc.h"
 #include "dev/gpio.h"
 #include "dev/uart.h"
+#include "dev/char-io.h"
 #include "lpm.h"
 #include "reg.h"
 
@@ -389,5 +390,41 @@ uart_isr(uint8_t uart)
 #define UART_ISR(u)  void uart##u##_isr(void) { uart_isr(u); }
 UART_ISR(0)
 UART_ISR(1)
-
+/*---------------------------------------------------------------------------*/
+void
+write_byte1(uint8_t b)
+{
+  uart_write_byte(1, b);
+}
+/*---------------------------------------------------------------------------*/
+void
+set_input1(int (*input)(uint8_t b))
+{
+  uart_set_input(1, input);
+}
+/*---------------------------------------------------------------------------*/
+char_io_device_t cc2538_uart0 = {
+  .write_byte = write_byte1,
+  .flush = NULL,
+  .set_input_callback = set_input1,
+};
+/*---------------------------------------------------------------------------*/
+void
+write_byte2(uint8_t b)
+{
+  uart_write_byte(2, b);
+}
+/*---------------------------------------------------------------------------*/
+void
+set_input2(int (*input)(uint8_t b))
+{
+  uart_set_input(2, input);
+}
+/*---------------------------------------------------------------------------*/
+char_io_device_t cc2538_uart1 = {
+  .write_byte = write_byte2,
+  .flush = NULL,
+  .set_input_callback = set_input2,
+};
+/*---------------------------------------------------------------------------*/
 /** @} */

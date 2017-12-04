@@ -37,6 +37,7 @@
  */
 /*---------------------------------------------------------------------------*/
 #include "contiki.h"
+#include "dev/char-io.h"
 #include "cc26xx-uart.h"
 #include "hw_types.h"
 #include "hw_memmap.h"
@@ -295,7 +296,7 @@ cc26xx_uart_init()
 }
 /*---------------------------------------------------------------------------*/
 void
-cc26xx_uart_write_byte(uint8_t c)
+cc26xx_uart_write_byte(uint8_t b)
 {
   /* Return early if disabled by user conf or if ports are misconfigured */
   if(usable() == false) {
@@ -306,11 +307,11 @@ cc26xx_uart_write_byte(uint8_t c)
     enable();
   }
 
-  ti_lib_uart_char_put(UART0_BASE, c);
+  ti_lib_uart_char_put(UART0_BASE, b);
 }
 /*---------------------------------------------------------------------------*/
 void
-cc26xx_uart_set_input(int (*input)(unsigned char c))
+cc26xx_uart_set_input(int (*input)(uint8_t b))
 {
   input_handler = input;
 
@@ -387,5 +388,17 @@ cc26xx_uart_isr(void)
     }
   }
 }
+/*---------------------------------------------------------------------------*/
+static void
+flush_uart(void)
+{
+  while(cc26xx_uart_busy() == UART_BUSY);
+}
+/*---------------------------------------------------------------------------*/
+char_io_device_t cc26xx_uart = {
+  .write_byte = cc26xx_uart_write_byte,
+  .flush = flush_uart,
+  .set_input_callback = cc26xx_uart_set_input,
+};
 /*---------------------------------------------------------------------------*/
 /** @} */

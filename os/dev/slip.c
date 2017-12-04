@@ -97,21 +97,21 @@ slip_write(const void *_ptr, int len)
   uint16_t i;
   uint8_t c;
 
-  slip_arch_writeb(SLIP_END);
+  slip_dev.write_byte(SLIP_END);
 
   for(i = 0; i < len; ++i) {
     c = *ptr++;
     if(c == SLIP_END) {
-      slip_arch_writeb(SLIP_ESC);
+      slip_dev.write_byte(SLIP_ESC);
       c = SLIP_ESC_END;
     } else if(c == SLIP_ESC) {
-      slip_arch_writeb(SLIP_ESC);
+      slip_dev.write_byte(SLIP_ESC);
       c = SLIP_ESC_ESC;
     }
-    slip_arch_writeb(c);
+    slip_dev.write_byte(c);
   }
 
-  slip_arch_writeb(SLIP_END);
+  slip_dev.write_byte(SLIP_END);
 }
 /*---------------------------------------------------------------------------*/
 static void

@@ -76,7 +76,7 @@ void cc26xx_uart_write_byte(uint8_t b);
  * \note This has a significant impact on overall energy consumption, so you
  * should only enabled UART RX input when it's actually required.
  */
-void cc26xx_uart_set_input(int (*input)(unsigned char c));
+void cc26xx_uart_set_input(int (*input)(uint8_t b));
 
 /**
  * \brief Returns the UART busy status
