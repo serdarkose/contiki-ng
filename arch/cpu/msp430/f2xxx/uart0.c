@@ -37,8 +37,11 @@
 #include "contiki.h"
 #include "dev/uart0.h"
 #include "dev/watchdog.h"
+#include "dev/char-io.h"
 #include "lib/ringbuf.h"
 #include "isr_compat.h"
+
+#include <stdint.h>
 
 static int (*uart0_input_handler)(unsigned char c);
 
@@ -95,7 +98,7 @@ uart0_active(void)
 }
 /*---------------------------------------------------------------------------*/
 void
-uart0_set_input(int (*input)(unsigned char c))
+uart0_set_input(int (*input)(uint8_t b))
 {
 #if RX_WITH_DMA /* This needs to be called after ctimer process is started */
   ctimer_set(&rxdma_timer, CLOCK_SECOND / 64, handle_rxdma_timer, NULL);
@@ -104,14 +107,14 @@ uart0_set_input(int (*input)(unsigned char c))
 }
 /*---------------------------------------------------------------------------*/
 void
-uart0_writeb(unsigned char c)
+uart0_writeb(uint8_t b)
 {
   watchdog_periodic();
 #if TX_WITH_INTERRUPT
   /* Put the outgoing byte on the transmission buffer. If the buffer
      is full, we just keep on trying to put the byte into the buffer
      until it is possible to put it there. */
-  while(ringbuf_put(&txbuf, c) == 0);
+  while(ringbuf_put(&txbuf, cb) == 0);
 
   /* If there is no transmission going, we need to start it by putting
      the first byte into the UART. */
@@ -127,7 +130,7 @@ uart0_writeb(unsigned char c)
   while((UCA0STAT & UCBUSY));
 
   /* Transmit the data. */
-  UCA0TXBUF = c;
+  UCA0TXBUF = b;
 #endif /* TX_WITH_INTERRUPT */
 }
 /*---------------------------------------------------------------------------*/
@@ -214,4 +217,10 @@ ISR(USCIAB0TX, uart0_tx_interrupt)
   IFG2 &= ~UCA0TXIFG;
 }
 #endif /* TX_WITH_INTERRUPT */
+/*---------------------------------------------------------------------------*/
+char_io_device_t uart0 = {
+  .write_byte = uart0_writeb,
+  .flush = NULL,
+  .set_input_callback = uart0_set_input,
+};
 /*---------------------------------------------------------------------------*/

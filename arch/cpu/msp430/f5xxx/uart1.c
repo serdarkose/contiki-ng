@@ -37,9 +37,12 @@
 #include <stdlib.h>
 #include "dev/uart1.h"
 #include "dev/watchdog.h"
+#include "dev/char-io.h"
 #include "isr_compat.h"
 
-static int (*uart1_input_handler)(unsigned char c);
+#include <stdint.h>
+
+static int (*uart1_input_handler)(uint8_t b);
 
 static volatile uint8_t transmitting;
 
@@ -81,7 +84,7 @@ uart1_active(void)
 }
 /*---------------------------------------------------------------------------*/
 void
-uart1_set_input(int (*input)(unsigned char c))
+uart1_set_input(int (*input)(uint8_t b))
 {
 #if RX_WITH_DMA /* This needs to be called after ctimer process is started */
   ctimer_set(&rxdma_timer, CLOCK_SECOND / 64, handle_rxdma_timer, NULL);
@@ -90,14 +93,14 @@ uart1_set_input(int (*input)(unsigned char c))
 }
 /*---------------------------------------------------------------------------*/
 void
-uart1_writeb(unsigned char c)
+uart1_writeb(uint8_t b)
 {
   watchdog_periodic();
   /* Loop until the transmission buffer is available. */
   while((UCA1STAT & UCBUSY));
 
   /* Transmit the data. */
-  UCA1TXBUF = c;
+  UCA1TXBUF = b;
 }
 /*---------------------------------------------------------------------------*/
 /**
@@ -170,4 +173,10 @@ ISR(USCI_A1, uart1_rx_interrupt)
   }
 }
 #endif /* !RX_WITH_DMA */
+/*---------------------------------------------------------------------------*/
+char_io_device_t uart1 = {
+  .write_byte = uart1_writeb,
+  .flush = NULL,
+  .set_input_callback = uart1_set_input,
+};
 /*---------------------------------------------------------------------------*/

@@ -42,10 +42,12 @@
 
 #include "contiki.h"
 
+#include <stdint.h>
+
 #define UART1_BAUD2UBR(baud) ((MSP430_CPU_SPEED)/(baud))
 
-void uart1_set_input(int (*input)(unsigned char c));
-void uart1_writeb(unsigned char c);
+void uart1_set_input(int (*input)(uint8_t b));
+void uart1_writeb(uint8_t b);
 void uart1_init(unsigned long ubr);
 uint8_t uart1_active(void);
 

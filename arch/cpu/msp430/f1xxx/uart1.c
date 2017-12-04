@@ -35,11 +35,13 @@
 #include "contiki.h"
 #include "dev/uart1.h"
 #include "dev/watchdog.h"
+#include "dev/char-io.h"
 #include "sys/ctimer.h"
 #include "lib/ringbuf.h"
 #include "isr_compat.h"
+#include <stdint.h>
 
-static int (*uart1_input_handler)(unsigned char c);
+static int (*uart1_input_handler)(uint8_t b);
 static volatile uint8_t rx_in_progress;
 
 static volatile uint8_t transmitting;
@@ -95,7 +97,7 @@ uart1_active(void)
 }
 /*---------------------------------------------------------------------------*/
 void
-uart1_set_input(int (*input)(unsigned char c))
+uart1_set_input(int (*input)(uint8_t b))
 {
 #if RX_WITH_DMA /* This needs to be called after ctimer process is started */
   ctimer_set(&rxdma_timer, CLOCK_SECOND/64, handle_rxdma_timer, NULL);
@@ -104,7 +106,7 @@ uart1_set_input(int (*input)(unsigned char c))
 }
 /*---------------------------------------------------------------------------*/
 void
-uart1_writeb(unsigned char c)
+uart1_writeb(uint8_t b)
 {
   watchdog_periodic();
 #if TX_WITH_INTERRUPT
@@ -130,7 +132,7 @@ uart1_writeb(unsigned char c)
   while((IFG2 & UTXIFG1) == 0);
 
   /* Transmit the data. */
-  TXBUF1 = c;
+  TXBUF1 = b;
 #endif /* TX_WITH_INTERRUPT */
 }
 /*---------------------------------------------------------------------------*/
@@ -272,4 +274,10 @@ ISR(UART1TX, uart1_tx_interrupt)
   }
 }
 #endif /* TX_WITH_INTERRUPT */
+/*---------------------------------------------------------------------------*/
+char_io_device_t uart1 = {
+  .write_byte = uart1_writeb,
+  .flush = NULL,
+  .set_input_callback = uart1_set_input,
+};
 /*---------------------------------------------------------------------------*/

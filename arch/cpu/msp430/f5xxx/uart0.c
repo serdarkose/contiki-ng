@@ -37,9 +37,12 @@
 #include <stdlib.h>
 #include "dev/uart0.h"
 #include "dev/watchdog.h"
+#include "dev/char-io.h"
 #include "isr_compat.h"
 
-static int (*uart0_input_handler)(unsigned char c);
+#include <stdint.h>
+
+static int (*uart0_input_handler)(uint8_t b);
 
 static volatile uint8_t transmitting;
 
@@ -51,20 +54,20 @@ uart0_active(void)
 }
 /*---------------------------------------------------------------------------*/
 void
-uart0_set_input(int (*input)(unsigned char c))
+uart0_set_input(int (*input)(uint8_t b))
 {
   uart0_input_handler = input;
 }
 /*---------------------------------------------------------------------------*/
 void
-uart0_writeb(unsigned char c)
+uart0_writeb(uint8_t b)
 {
   watchdog_periodic();
   /* Loop until the transmission buffer is available. */
   while((UCA0STAT & UCBUSY));
 
   /* Transmit the data. */
-  UCA0TXBUF = c;
+  UCA0TXBUF = b;
 }
 /*---------------------------------------------------------------------------*/
 /**
@@ -115,4 +118,10 @@ ISR(USCI_A0, uart0_rx_interrupt)
     }
   }
 }
+/*---------------------------------------------------------------------------*/
+char_io_device_t uart0 = {
+  .write_byte = uart0_writeb,
+  .flush = NULL,
+  .set_input_callback = uart0_set_input,
+};
 /*---------------------------------------------------------------------------*/

@@ -35,8 +35,11 @@
 #include <stdlib.h>
 #include "dev/uart1.h"
 #include "dev/watchdog.h"
+#include "dev/char-io.h"
 #include "lib/ringbuf.h"
 #include "isr_compat.h"
+
+#include <stdint.h>
 
 static int (*uart1_input_handler)(unsigned char c);
 
@@ -63,13 +66,13 @@ uart1_active(void)
 }
 /*---------------------------------------------------------------------------*/
 void
-uart1_set_input(int (*input)(unsigned char c))
+uart1_set_input(int (*input)(uint8_t b))
 {
   uart1_input_handler = input;
 }
 /*---------------------------------------------------------------------------*/
 void
-uart1_writeb(unsigned char c)
+uart1_writeb(uint8_t b)
 {
   /* watchdog_periodic(); */
 #if TX_WITH_INTERRUPT
@@ -77,7 +80,7 @@ uart1_writeb(unsigned char c)
   /* Put the outgoing byte on the transmission buffer. If the buffer
      is full, we just keep on trying to put the byte into the buffer
      until it is possible to put it there. */
-  while(ringbuf_put(&txbuf, c) == 0);
+  while(ringbuf_put(&txbuf, b) == 0);
 
   /* If there is no transmission going, we need to start it by putting
      the first byte into the UART. */
@@ -92,7 +95,7 @@ uart1_writeb(unsigned char c)
   while(!(IFG2 & UCA0TXIFG));
 
   /* Transmit the data. */
-  UCA0TXBUF = c;
+  UCA0TXBUF = b;
 #endif /* TX_WITH_INTERRUPT */
 }
 /*---------------------------------------------------------------------------*/
@@ -144,4 +147,10 @@ ISR(USCIAB1TX, uart1_tx_interrupt)
   }
 }
 #endif /* TX_WITH_INTERRUPT */
+/*---------------------------------------------------------------------------*/
+char_io_device_t uart1 = {
+  .write_byte = uart1_writeb,
+  .flush = NULL,
+  .set_input_callback = uart1_set_input,
+};
 /*---------------------------------------------------------------------------*/
