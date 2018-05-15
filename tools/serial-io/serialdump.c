@@ -12,6 +12,7 @@
 #include <string.h>
 #include <time.h>
 #include <signal.h>
+#include <stdbool.h>
 /*---------------------------------------------------------------------------*/
 #define BAUDRATE B115200
 #define BAUDRATE_S "115200"
@@ -53,15 +54,18 @@ speed_t b_rate = BAUDRATE;
 /*---------------------------------------------------------------------------*/
 static unsigned char rxbuf[2048];
 /*---------------------------------------------------------------------------*/
+static bool append_msec = false;
+/*---------------------------------------------------------------------------*/
 static int
 usage(int result)
 {
-  printf("Usage: serialdump [-x] [-s[on]] [-i] [-bSPEED] T[format] [SERIALDEVICE]\n");
+  printf("Usage: serialdump [-x] [-s[on]] [-i] [-bSPEED] T[format] [-m] [SERIALDEVICE]\n");
   printf("       -x for hexadecimal output\n");
   printf("       -i for decimal output\n");
   printf("       -s for automatic SLIP mode\n");
   printf("       -so for SLIP only mode (all data is SLIP packets)\n");
   printf("       -sn to hide SLIP packages\n");
+  printf("       -m append milliseconds to the time prefix (see also -T)\n");
   printf("       -T[format] to add time for each text line\n");
   printf("         (see man page for strftime() for format description)\n");
   return result;
@@ -151,6 +155,9 @@ main(int argc, char **argv)
           timeformat = &argv[index][2];
         }
         mode = MODE_START_DATE;
+        break;
+      case 'm':
+        append_msec = true;
         break;
       case 'h':
         return usage(0);
@@ -291,7 +298,11 @@ main(int argc, char **argv)
           time_t t;
           t = time(&t);
           strftime(outbuf, HCOLS, timeformat, localtime(&t));
-          printf("[%s] ", outbuf);
+          if(append_msec) {
+            printf("[%s] ", outbuf); /* change here */
+          } else {
+            printf("[%s] ", outbuf);
+          }
           mode = MODE_DATE;
         }
         /* continue into the MODE_DATE */
