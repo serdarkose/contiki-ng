@@ -1,3 +1,11 @@
+# Before you start
+This example was first developed for the original Contiki OS and was desinged
+under the assumption that the underlying radio duty cycling is controlled by
+ContikiMAC.
+
+This example has not been updated since the release of Contiki-NG and is only
+provided here for reference.
+
 # CC13xx/CC26xx Very Sleepy Demo
 
 This example demonstrates a way of deploying a very low-consuming, very sleepy
