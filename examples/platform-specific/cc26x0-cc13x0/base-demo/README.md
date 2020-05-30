@@ -1,7 +1,12 @@
-CC26xx Demo
-===========
-This example demonstrates basic functionality for the two supported CC26xx
-boards. More specifically, the example demonstrates:
+CC13xx/CC26xx Base Demo
+=======================
+This example demonstrates basic functionality for the various CC13xx/CC26xx
+boards supported by Contiki-NG.
+
+This example is intended to work for both the older `cc26x0-cc13x0` target, as
+well as for the newer `simplelink` target.
+
+The example demonstrates:
 
 * How to take sensor readings
 * How to use buttons and the reed relay (triggered by holding a magnet near S3
