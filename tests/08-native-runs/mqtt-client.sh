@@ -26,7 +26,7 @@ MOSQ_SUB_ERR=mosquitto_sub.err
 
 # Start mosquitto server
 echo "Starting mosquitto daemon"
-mosquitto &> /dev/null &
+mosquitto -v &
 MOSQID=$!
 sleep 2
 
@@ -38,9 +38,9 @@ sleep 2
 
 # Starting Contiki-NG native node
 echo "Starting native node"
-make -C $CODE_DIR -B TARGET=native \
+make -C $CODE_DIR -B TARGET=native V=1 \
   DEFINES=MQTT_CLIENT_CONF_ORG_ID=\\\"travis-test\\\",MQTT_CLIENT_CONF_LOG_LEVEL=LOG_LEVEL_DBG,MQTT_CONF_VERSION=MQTT_PROTOCOL_VERSION_$MQTT_VERSION \
-  > make.log 2> make.err
+  2> make.err
 sudo $VALGRIND_CMD $CODE_DIR/$CODE.native > $CLIENT_LOG 2> $CLIENT_ERR &
 CPID=$!
 
@@ -73,7 +73,6 @@ then
   cp $CLIENT_LOG $CLIENT_TESTLOG
   printf "%-32s TEST OK\n" "$TEST_NAME" | tee $CLIENT_TESTLOG;
 else
-  echo "==== make.log ====" ; cat make.log;
   echo "==== make.err ====" ; cat make.err;
   echo "==== $CLIENT_LOG ====" ; cat $CLIENT_LOG;
   echo "==== $CLIENT_ERR ====" ; cat $CLIENT_ERR;
